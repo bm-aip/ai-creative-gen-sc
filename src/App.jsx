@@ -126,7 +126,12 @@ async function extractVideoFrames(file, frameCount = 8) {
 async function callClaude(system, messages, maxTokens = 8000) {
   const res = await fetch(ANTHROPIC_API, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
     body: JSON.stringify({ model: MDL, max_tokens: maxTokens, system, messages }),
   });
   if (!res.ok) throw new Error("API " + res.status + ": " + (await res.text()).slice(0, 200));
