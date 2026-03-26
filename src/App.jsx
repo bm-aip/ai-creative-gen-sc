@@ -126,12 +126,7 @@ async function extractVideoFrames(file, frameCount = 8) {
 async function callClaude(system, messages, maxTokens = 8000) {
   const res = await fetch(ANTHROPIC_API, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model: MDL, max_tokens: maxTokens, system, messages }),
   });
   if (!res.ok) throw new Error("API " + res.status + ": " + (await res.text()).slice(0, 200));
@@ -483,13 +478,20 @@ Analyse the uploaded image carefully — describe what you see (people, setting,
 Return ONLY valid JSON with one key per selected platform. Each value: {"copy":"[post body without hashtags]","hashtags":"[hashtag string or empty]"}.`;
 
     try {
-      const raw = await callClaude(system, [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "base64", media_type: smFile.mediaType, data: smFile.b64 } },
-          { type: "text", text: `Analyse this image and write social media copy for: ${smPlatforms.join(", ")}. JSON only.` }
-        ]
-      }], 2000);
+      const mediaContent = smFile.isVideo && smFile.frames
+        ? [
+            ...smFile.frames.map(fr => ([
+              { type: "image", source: { type: "base64", media_type: "image/jpeg", data: fr.b64 } },
+              { type: "text", text: `[Frame ${fr.timeIndex}/${smFile.frames.length} — ${fr.timeLabel}]` },
+            ])).flat(),
+            { type: "text", text: `These ${smFile.frames.length} frames are evenly sampled from the full video. Analyse the people, setting, mood, motion, and visual story across all frames, then write social media copy for: ${smPlatforms.join(", ")}. JSON only.` },
+          ]
+        : [
+            { type: "image", source: { type: "base64", media_type: smFile.mediaType, data: smFile.b64 } },
+            { type: "text", text: `Analyse this image and write social media copy for: ${smPlatforms.join(", ")}. JSON only.` },
+          ];
+
+      const raw = await callClaude(system, [{ role: "user", content: mediaContent }], 2000);
       setSmResult(safeJSON(raw));
     } catch(e) {
       setSmError(e.message);
@@ -933,23 +935,53 @@ Return ONLY valid JSON:
             </div>
 
             <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: "14px 16px", marginBottom: 14 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>Creative Image</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 10 }}>Creative Image or Video</div>
               {!smFile ? (
                 <div onClick={() => document.getElementById("sm-file-input").click()}
                   style={{ border: "2px dashed #CBD5E1", borderRadius: 12, padding: "32px 20px", textAlign: "center", cursor: "pointer", background: "#F8FAFC" }}>
-                  <input type="file" id="sm-file-input" accept="image/*" style={{ display: "none" }} onChange={async e => {
+                  <input type="file" id="sm-file-input" accept="image/*,video/*" style={{ display: "none" }} onChange={async e => {
                     const f = e.target.files[0]; if (!f) return;
-                    const b64 = await toB64(f);
-                    setSmFile({ preview: `data:${f.type};base64,${b64}`, b64, mediaType: f.type || "image/jpeg", name: f.name });
-                    setSmResult(null); setSmError(""); e.target.value = "";
+                    const isVideo = f.type.startsWith("video/");
+                    if (isVideo) {
+                      setSmFile({ preview: null, frames: null, b64: null, mediaType: "image/jpeg", name: f.name, isVideo: true, loading: true });
+                      setSmResult(null); setSmError("");
+                      try {
+                        const { frames } = await extractVideoFrames(f, 8);
+                        setSmFile({ preview: frames[0].dataUrl, frames, b64: frames[0].b64, mediaType: "image/jpeg", name: f.name, isVideo: true, loading: false });
+                      } catch(err) {
+                        setSmError("Could not process video: " + err.message);
+                        setSmFile(null);
+                      }
+                    } else {
+                      const b64 = await toB64(f);
+                      setSmFile({ preview: `data:${f.type};base64,${b64}`, frames: null, b64, mediaType: f.type || "image/jpeg", name: f.name, isVideo: false, loading: false });
+                      setSmResult(null); setSmError("");
+                    }
+                    e.target.value = "";
                   }} />
                   <div style={{ fontSize: 28, marginBottom: 7 }}>🖼</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Click to upload creative</div>
-                  <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 3 }}>PNG, JPG, WEBP</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>Click to upload image or video</div>
+                  <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 3 }}>PNG, JPG, WEBP, MP4, MOV</div>
                 </div>
               ) : (
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <img src={smFile.preview} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10, border: "1px solid #E2E8F0", flexShrink: 0 }} />
+                  {smFile.loading ? (
+                    <div style={{ width: 72, height: 72, borderRadius: 10, border: "1px solid #E2E8F0", background: "#F8FAFC", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0 }}>
+                      <span style={{ fontSize: 18 }}>⏳</span>
+                      <span style={{ fontSize: 9, color: "#94A3B8" }}>Uploading…</span>
+                    </div>
+                  ) : smFile.isVideo && smFile.frames ? (
+                    <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                      {smFile.frames.slice(0, 4).map((fr, i) => (
+                        <div key={i} style={{ position: "relative" }}>
+                          <img src={fr.dataUrl} alt="" style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 4, border: "1px solid #E2E8F0", display: "block" }} />
+                          <span style={{ position: "absolute", bottom: 1, left: 1, fontSize: 6, fontWeight: 700, background: "rgba(0,0,0,.6)", color: "#fff", padding: "1px 2px", borderRadius: 2 }}>{fr.timeLabel}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <img src={smFile.preview} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10, border: "1px solid #E2E8F0", flexShrink: 0 }} />
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#1E293B" }}>{smFile.name}</div>
                     <button onClick={() => { setSmFile(null); setSmResult(null); setSmError(""); }}
