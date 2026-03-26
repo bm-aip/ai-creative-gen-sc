@@ -614,12 +614,16 @@ Return ONLY valid JSON:
   // ── File upload ────────────────────────────────────────────────────────────
   const handleFiles = useCallback(async (files) => {
     const arr = Array.from(files);
-    const added = await Promise.all(arr.map(async f => ({
-      id: Math.random().toString(36).slice(2), file: f,
-      preview: `data:${f.type || 'image/jpeg'};base64,${await toB64(f)}`,
-      mediaType: f.type || "image/jpeg",
-      status: "ready", result: null, error: null,
-    })));
+    const added = await Promise.all(arr.map(async f => {
+      const raw = f.type.toLowerCase();
+      const mediaType = raw.includes("png") ? "image/png" : raw.includes("gif") ? "image/gif" : raw.includes("webp") ? "image/webp" : "image/jpeg";
+      return {
+        id: Math.random().toString(36).slice(2), file: f,
+        preview: `data:${f.type || 'image/jpeg'};base64,${await toB64(f)}`,
+        mediaType,
+        status: "ready", result: null, error: null,
+      };
+    }));
     setCreatives(p => [...p, ...added]);
   }, []);
 
@@ -954,7 +958,9 @@ Return ONLY valid JSON:
                       }
                     } else {
                       const b64 = await toB64(f);
-                      setSmFile({ preview: `data:${f.type};base64,${b64}`, frames: null, b64, mediaType: f.type || "image/jpeg", name: f.name, isVideo: false, loading: false });
+                      const raw = f.type.toLowerCase();
+                      const mediaType = raw.includes("png") ? "image/png" : raw.includes("gif") ? "image/gif" : raw.includes("webp") ? "image/webp" : "image/jpeg";
+                      setSmFile({ preview: `data:${f.type};base64,${b64}`, frames: null, b64, mediaType, name: f.name, isVideo: false, loading: false });
                       setSmResult(null); setSmError("");
                     }
                     e.target.value = "";
@@ -1086,7 +1092,9 @@ Return ONLY valid JSON:
                         setPgFile({ preview: frames[0].dataUrl, frames, b64: frames[0].b64, mediaType: "image/jpeg", name: f.name, isVideo: true, duration, loading: false });
                       } else {
                         const b64 = await toB64(f);
-                        setPgFile({ preview: `data:${f.type};base64,${b64}`, frames: null, b64, mediaType: f.type || "image/jpeg", name: f.name, isVideo: false, loading: false });
+                        const rawType = f.type.toLowerCase();
+                        const mediaType = rawType.includes("png") ? "image/png" : rawType.includes("gif") ? "image/gif" : rawType.includes("webp") ? "image/webp" : "image/jpeg";
+                        setPgFile({ preview: `data:${f.type};base64,${b64}`, frames: null, b64, mediaType, name: f.name, isVideo: false, loading: false });
                       }
                     } catch(err) {
                       setPgError("Could not process file: " + err.message);
