@@ -140,6 +140,7 @@ async function callClaude(system, messages, maxTokens = 8000) {
       });
     }
   });
+  console.log("CLAUDE REQUEST - first content block:", JSON.stringify(safeMessages[0]?.content?.[0]));
   const res = await fetch(ANTHROPIC_API, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
