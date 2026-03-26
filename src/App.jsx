@@ -142,6 +142,14 @@ function safeJSON(text) {
 function toB64(file) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej; r.readAsDataURL(file); });
 }
+function normalizeMediaType(t) {
+  if (!t) return "image/jpeg";
+  const s = t.toLowerCase();
+  if (s.includes("png"))  return "image/png";
+  if (s.includes("gif"))  return "image/gif";
+  if (s.includes("webp")) return "image/webp";
+  return "image/jpeg";
+}
 function ago(ts) {
   const d = Math.floor((Date.now() - ts) / 86400000);
   return d < 1 ? "today" : d + "d ago";
@@ -487,7 +495,7 @@ Return ONLY valid JSON with one key per selected platform. Each value: {"copy":"
             { type: "text", text: `These ${smFile.frames.length} frames are evenly sampled from the full video. Analyse the people, setting, mood, motion, and visual story across all frames, then write social media copy for: ${smPlatforms.join(", ")}. JSON only.` },
           ]
         : [
-            { type: "image", source: { type: "base64", media_type: smFile.mediaType, data: smFile.b64 } },
+            { type: "image", source: { type: "base64", media_type: normalizeMediaType(smFile.mediaType), data: smFile.b64 } },
             { type: "text", text: `Analyse this image and write social media copy for: ${smPlatforms.join(", ")}. JSON only.` },
           ];
 
@@ -593,7 +601,7 @@ Return ONLY valid JSON:
             { type: "text", text: `Total duration: ~${pgFile.duration ? Math.round(pgFile.duration) : "?"}s. These ${pgFile.frames.length} frames are evenly sampled across the full video. Analyse motion arcs, scene changes, camera movement, pacing, subjects, lighting progression, and mood across all frames to generate the ${tool.name} prompt. JSON only.` },
           ]
         : [
-            { type: "image", source: { type: "base64", media_type: pgFile.mediaType, data: pgFile.b64 } },
+            { type: "image", source: { type: "base64", media_type: normalizeMediaType(pgFile.mediaType), data: pgFile.b64 } },
             { type: "text", text: `Analyse this reference image and generate a ${tool.name} prompt. JSON only.` },
           ];
 
@@ -671,7 +679,7 @@ Return ONLY valid JSON:
       setCreatives([...cur]);
       try {
         const raw = await callClaude(system, [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: cur[i].mediaType, data: cur[i].preview.split(',')[1] } },
+          { type: "image", source: { type: "base64", media_type: normalizeMediaType(cur[i].mediaType), data: cur[i].preview.split(',')[1] } },
           { type: "text", text: "Analyse this creative and return JSON. JSON only." },
         ]}]);
         const result = safeJSON(raw);
@@ -721,7 +729,7 @@ Return ONLY valid JSON:
 
     try {
       const raw = await callClaude(system, [{ role: "user", content: [
-        { type: "image", source: { type: "base64", media_type: creative.mediaType, data: creative.preview.split(',')[1] } },
+        { type: "image", source: { type: "base64", media_type: normalizeMediaType(creative.mediaType), data: creative.preview.split(',')[1] } },
         { type: "text", text: `PROJECT: ${p.name} — ${p.subtitle}\nLOCATION: ${p.location}\n\nAD COPY:\n${copyText}\n\n${insCtx ? "CAMPAIGN CONTEXT: " + insCtx + "\n\n" : ""}Rate this creative. JSON only.` },
       ]}], 2000);
       setRating(safeJSON(raw));
