@@ -23,7 +23,34 @@ function loadRepo() {
         };
       }
     }
-    return EMPTY_REPO;
+    // Seed with baked-in data from March 2026 Pipeboard fetch
+    const seed = {
+      meta: {
+        entries: [{
+          date: "2026-03-18T00:00:00Z",
+          source: "Pipeboard MCP — 90 days (Dec 2025–Mar 2026)",
+          best: [
+            { ad_name: "Ashwin Ads", campaign_name: "Elements_Kaveri_Video_Camp", cpl: 82, conversions: 967, headline: "Active Retirement Community in Mysuru", primary_text: "Welcome to Elements Kaveri, Mysuru most serene and well-planned senior living destination.\nYour golden years deserve more than just a house - they deserve a vibrant community, thoughtful design, and a life filled with joy, wellness, and connection.\n✅ Independent Villas start from Rs.99 Lakhs*\n✅ Part of a 51-acre Integrated Township\n✅ 24/7 Security & Medical Assistance" },
+            { ad_name: "Elements Kaveri Aug", campaign_name: "Elements_Kaveri_Mysuru", cpl: 85, conversions: 258, headline: "Mysuru's Luxury Senior Living @ Rs.99L* Onwards", primary_text: "Welcome to Elements Kaveri Senior Living at Mysuru.\n✅ Premium Senior-Friendly Apartments – Starting from ₹99L*\n✅ Over 50+ Amenities\n✅ Medical, Recreational & Wellness Facilities\nHere, you're not just buying a home – you're gifting yourself a lifestyle of dignity, delight, and care." },
+            { ad_name: "Mylapore Patti", campaign_name: "Elements Madhuram", cpl: 107, conversions: 537, headline: "Ready-to-Move Retirement Homes in Vandalur", primary_text: "Grihapravesam at Elements Active Senior Living — A ready-to-move retirement community in Vandalur.\n🎉 Up to ₹5 Lakhs OFF on spot bookings\n✔ 24/7 safety & care support · ✔ Like-minded senior community\n📞 Call 89398 39001 to book your visit." },
+            { ad_name: "Influencer Video 2", campaign_name: "Elements Madhuram", cpl: 114, conversions: 1062, headline: "Grihapravesam Offers on Senior Living Apartments", primary_text: "Celebrate a peaceful new beginning at Elements Active Senior Living ✨\n🎁 Spot booking offers up to ₹5L · 📍 Vandalur · 📞 89398 39001" },
+            { ad_name: "Influence Video 1", campaign_name: "Elements Madhuram", cpl: 125, conversions: 212, headline: "Grihapravesam Offers on Senior Living", primary_text: "Celebrate a peaceful new beginning at Elements Active Senior Living ✨\nA thoughtfully designed retirement community with comprehensive senior living services.\n🎁 Spot booking offers up to ₹5L" },
+          ],
+          worst: [
+            { ad_name: "Elements Service OT Ad 2", campaign_name: "Elements Service Camp", cpl: 1171, conversions: 24, headline: "Ready-to-move senior living apartments at Vandalur", primary_text: "Ready-to-move senior living apartments at Vandalur.\nSafe, secure & supportive lifestyle.\nSpot booking benefits up to ₹5 Lakhs. Final 10 units available." },
+            { ad_name: "Mohan Brand Video TG", campaign_name: "Elements Brand And Carousel", cpl: 981, conversions: 25, headline: "Luxury Living for Life's Best Chapter", primary_text: "When a father asked for a Happy Ending, he meant a peaceful life — with care, comfort, and everything taken care of.\nAt Elements Rising Palm, seniors enjoy premium senior-friendly homes, 24/7 support." },
+            { ad_name: "Elements Madhuram OT Ad 2", campaign_name: "Elements Madhuram Dec", cpl: 978, conversions: 52, headline: "Ready-to-Occupy Senior Living apartments at Vandalur", primary_text: "Ready-to-occupy senior living community at Vandalur, with nutritious meals, housekeeping, and 24/7 safety.\n🎉 Upto Rs.5 Lakhs Spot Booking Offer Available. Only 10 units left." },
+            { ad_name: "Elements Service TG Ad 1", campaign_name: "Elements Service Camp", cpl: 805, conversions: 46, headline: "Ready-to-move senior living apartments at Vandalur", primary_text: "Ready-to-move senior living apartments at Vandalur.\nSafe, secure & supportive lifestyle.\nSpot booking benefits up to ₹5 Lakhs. Final 10 units available." },
+          ],
+          summary: "Ads featuring real people and emotional storytelling (Ashwin video ₹82 CPL, Mylapore Patti ₹107 CPL) dramatically outperform generic feature-list ads — open with an aspirational hook (golden years, Grihapravesam, peaceful new beginning), anchor price early (₹99L, ₹5L off), and use a single warm CTA; avoid leading with amenity checklists ('safe, secure & supportive', 'nutritious meals, housekeeping') which drove ₹805–₹1,171 CPL.",
+        }],
+        consolidated: null,
+      },
+      google: { entries: [], consolidated: null },
+    };
+    // Build consolidated from seed
+    seed.meta.consolidated = buildConsolidated(seed.meta.entries);
+    return seed;
   } catch { return EMPTY_REPO; }
 }
 
@@ -52,7 +79,11 @@ function saveRepo(repo) {
   try { localStorage.setItem('acg_repo_v1', JSON.stringify(repo)); } catch {}
 }
 
-const BASE_PROJECTS = {};
+const BASE_PROJECTS = {
+  sattva: { name: "Elements Sattva", subtitle: "Urban Senior Living, Porur", location: "Gerugambakkam, near Porur, Chennai", color: "#7C3AED", units: "49 units — 45×2BHK (830–850 sq ft), 4×1BHK (475 sq ft)", tagline: "Live Connected to Life's Best", target: "Seniors 60+ seeking urban senior living, west Chennai", highlights: ["Premium boutique active senior living in urban Porur, Chennai", "Near MIOT Hospital, Ramachandra Hospital, Apollo Hospitals Vanagaram", "Vegetarian kitchen, heart-healthy & diabetic-friendly meals", "Physiotherapy gymnasium, yoga & meditation zones, ayurvedic massages", "24/7 paramedical, resident nurses, visiting doctors, dedicated ambulance", "5-ft wide corridors, senior-friendly design throughout", "RERA: TN/29/BUILDING/0579/2024"], custom_kb: "" },
+  uptown: { name: "Elements Uptown", subtitle: "Active Senior Living, Keerapakkam", location: "Keerapakkam, off Vandalur–Kelambakkam Road, Chennai", color: "#059669", units: "3 Blocks — Studio, 1BHK, 1.5BHK, 2BHK", tagline: "Golden years, beautifully lived", target: "Seniors 60+ seeking green campus lifestyle, South Chennai", highlights: ["Serene green campus with 1 Acre Park, Walking Trail, Miyawaki Forest", "Nearby: Tagore Medical College, Chettinad Hospital, Sankara Multispecialty", "Vandalur Railway Station & Kilambakkam Metro connectivity", "24x7 paramedical care & security, emergency calling devices in all rooms", "RERA: TN/35/BUILDING/0565/2024"], custom_kb: "" },
+  madhuram: { name: "Madhuram", subtitle: "Senior Living, Vandalur", location: "Vandalur, Chennai", color: "#B45309", units: "Ready-to-occupy senior living apartments", tagline: "Sweet Living for Golden Years", target: "Seniors 60+, South Chennai", highlights: ["Ready-to-occupy senior living community at Vandalur", "Nutritious meals, housekeeping, 24/7 safety included", "Spot booking offers up to Rs.5 Lakhs"], custom_kb: "" },
+};
 
 const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
 const MDL = "claude-sonnet-4-20250514";
@@ -318,6 +349,7 @@ export default function App() {
   const [npLoc, setNpLoc] = useState("");  const [npUnits, setNpUnits] = useState("");
   const [npTag, setNpTag] = useState("");  const [npTgt, setNpTgt] = useState("");
   const [npHl, setNpHl] = useState("");
+  const [npBrochureLoading, setNpBrochureLoading] = useState(false);
 
   const processReport = async (file, platform) => {
     const setStatus = platform === "meta" ? setMetaStatus : setGoogleStatus;
@@ -400,7 +432,7 @@ Return top 5 best (lowest CPL) and top 5 worst (highest CPL).`;
     if (!smFile || !smPlatforms.length) return;
     setSmLoading(true); setSmResult(null); setSmError("");
 
-    const smProj = projects[smProjKey] || projects[Object.keys(projects)[0]] || { name: "No project", subtitle: "", location: "", highlights: [], color: "#94A3B8", tagline: "", target: "", units: "", custom_kb: "" };
+    const smProj = projects[smProjKey] || projects[Object.keys(projects)[0]];
     const smBest  = insights?.meta?.best  || [];
     const smWorst = insights?.meta?.worst || [];
     const smInsCtx = smBest.length > 0 ? [
@@ -732,7 +764,7 @@ Return ONLY valid JSON:
   const googleStale = googleAge !== null && googleAge >= 30;
   const insights = { meta: metaCon || { best: [], worst: [], summary: "" } };
 
-  const proj = projects[projKey] || projects[Object.keys(projects)[0]] || { name: "No project", subtitle: "Add a project first", location: "", highlights: [], color: "#94A3B8", tagline: "", target: "", units: "", custom_kb: "" };
+  const proj = projects[projKey] || projects[Object.keys(projects)[0]];
 
   // ── RENDER ─────────────────────────────────────────────────────────────────
   const T = { fontFamily: "'DM Sans', system-ui, sans-serif" };
@@ -756,7 +788,7 @@ Return ONLY valid JSON:
         <div style={{ maxWidth: 820, margin: "0 auto", padding: "0 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0 3px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 17, color: "#F8FAFC" }}>Elements</span>
+              <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 17, color: "#F8FAFC" }}>Suncrest</span>
               <span style={{ width: 1, height: 12, background: "#334155", margin: "0 4px" }} />
               <span style={{ fontSize: 12, color: "#64748B", fontWeight: 500 }}>Ad Copy Gen</span>
             </div>
@@ -779,11 +811,6 @@ Return ONLY valid JSON:
         {/* ── GENERATE ─────────────────────────────────────────────────────── */}
         {tab === "generate" && (
           <div>
-            {Object.keys(projects).length === 0 && (
-              <div style={{ background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 14, padding: "11px 14px", marginBottom: 14, fontSize: 12, color: "#6D28D9", cursor: "pointer" }} onClick={() => setTab("projects")}>
-                ✦ <strong>No projects yet</strong> — go to the Projects tab to add your first project before generating copy.
-              </div>
-            )}
             {!metaCon && !googleCon && (
               <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 14, padding: "11px 14px", marginBottom: 14, fontSize: 12, color: "#92400E", cursor: "pointer" }} onClick={() => setTab("insights")}>
                 ⚠ <strong>No insights loaded yet</strong> — upload your Meta or Google Ads report in the Insights tab. Copy generation works without it, but insights make the copy significantly better.
@@ -1252,6 +1279,56 @@ Return ONLY valid JSON:
 
             <div style={{ background: "#fff", border: "2px dashed #CBD5E1", borderRadius: 18, padding: "16px 18px" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", marginBottom: 13 }}>Add New Project</div>
+
+              {/* Brochure upload */}
+              <div style={{ background: "#F5F3FF", border: "1px solid #DDD6FE", borderRadius: 12, padding: "11px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#6D28D9" }}>📄 Auto-fill from brochure</div>
+                  <div style={{ fontSize: 11, color: "#7C3AED", marginTop: 2 }}>Upload a PDF brochure and Claude will extract all project details</div>
+                </div>
+                <label style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, padding: "7px 14px", borderRadius: 8, background: npBrochureLoading ? "#EDE9FE" : "#7C3AED", color: npBrochureLoading ? "#7C3AED" : "#fff", cursor: npBrochureLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}>
+                  {npBrochureLoading ? "⏳ Extracting…" : "Upload PDF"}
+                  <input type="file" accept=".pdf" style={{ display: "none" }} disabled={npBrochureLoading} onChange={async e => {
+                    const f = e.target.files[0]; if (!f) return;
+                    setNpBrochureLoading(true);
+                    try {
+                      const b64 = await toB64(f);
+                      const system = `You are extracting project details from a real estate brochure to populate a project knowledge base for an ad copy generation tool.
+Extract the following fields and return ONLY valid JSON:
+{
+  "name": "Full project name",
+  "subtitle": "Short descriptor e.g. Senior Living, Porur",
+  "location": "Full location e.g. Porur, Chennai",
+  "units": "Unit types and pricing e.g. 2BHK from ₹99L",
+  "tagline": "Marketing tagline if present, else generate a short aspirational one",
+  "target": "Target audience description",
+  "highlights": ["key highlight 1", "key highlight 2", "key highlight 3", "...up to 8 highlights"]
+}
+Be specific and concise. Extract real data from the brochure — do not invent details not present.`;
+                      const raw = await callClaude(system, [{
+                        role: "user",
+                        content: [
+                          { type: "document", source: { type: "base64", media_type: "application/pdf", data: b64 } },
+                          { type: "text", text: "Extract project details from this brochure. JSON only." }
+                        ]
+                      }], 1000);
+                      const parsed = safeJSON(raw);
+                      if (parsed.name)       setNpName(parsed.name);
+                      if (parsed.subtitle)   setNpSub(parsed.subtitle);
+                      if (parsed.location)   setNpLoc(parsed.location);
+                      if (parsed.units)      setNpUnits(parsed.units);
+                      if (parsed.tagline)    setNpTag(parsed.tagline);
+                      if (parsed.target)     setNpTgt(parsed.target);
+                      if (parsed.highlights?.length) setNpHl(parsed.highlights.join("\n"));
+                      showToast("Brochure extracted ✓ — review and save");
+                    } catch(err) {
+                      showToast("Could not extract: " + err.message, "err");
+                    }
+                    setNpBrochureLoading(false);
+                    e.target.value = "";
+                  }} />
+                </label>
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                 {[["Project Name *", npName, setNpName, "Elements Kaveri"], ["Subtitle", npSub, setNpSub, "Senior Living, Mysuru"], ["Location", npLoc, setNpLoc, "Mysuru, Karnataka"], ["Units", npUnits, setNpUnits, "2BHK from ₹99L"]].map(([lbl, val, set, ph]) => (
                   <div key={lbl}>
