@@ -274,7 +274,7 @@ function RatingDisplay({ rating, creative }) {
 // ── MAIN APP ───────────────────────────────────────────────────────────────────
 export default function App() {
   const [tab, setTab] = useState("promptgen");
-  const [projKey, setProjKey] = useState("sattva");
+  const [projKey, setProjKey] = useState("");
   const [projects, setProjects] = useState(() => {
     try { const s = localStorage.getItem("acg_sc_proj_v1"); return s ? JSON.parse(s) : { ...BASE_PROJECTS }; } catch { return { ...BASE_PROJECTS }; }
   });
@@ -288,7 +288,7 @@ export default function App() {
   const [ratingError, setRatingError] = useState("");
   const [metaStatus, setMetaStatus] = useState({ loading: false, error: false, msg: "" });
   const [smFile, setSmFile] = useState(null);
-  const [smProjKey, setSmProjKey] = useState("sattva");
+  const [smProjKey, setSmProjKey] = useState("");
   const [smPlatforms, setSmPlatforms] = useState(["facebook", "instagram"]);
   const [smContext, setSmContext] = useState("");
   const [smLoading, setSmLoading] = useState(false);
@@ -908,7 +908,7 @@ Return ONLY valid JSON:
                   <button key={k} onClick={() => setSmProjKey(k)} style={{ padding: "6px 16px", borderRadius: 100, border: "2px solid " + (smProjKey === k ? p.color : "#E2E8F0"), background: smProjKey === k ? p.color + "12" : "#F8FAFC", color: smProjKey === k ? p.color : "#64748B", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>{p.name}</button>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 9 }}>{(projects[smProjKey] || projects[Object.keys(projects)[0]]).subtitle} · {(projects[smProjKey] || projects[Object.keys(projects)[0]]).location}</div>
+              <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 9 }}>{(projects[smProjKey] || projects[Object.keys(projects)[0]] || {}).subtitle} · {(projects[smProjKey] || projects[Object.keys(projects)[0]] || {}).location}</div>
             </div>
 
             <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: "14px 16px", marginBottom: 14 }}>
